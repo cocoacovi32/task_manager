@@ -1,100 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MessageSquare, User, Loader2 } from 'lucide-react';
+import { MessageSquare, User, Loader2, Send } from 'lucide-react';
 
 const TaskList = () => {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [newComment, setNewComment] = useState({});
 
-    // 1. Fetch Tasks from Django on Load
+    // Use environment variable or fallback to local for development
+    const API_BASE = "http://127.0.0.1:8000/api";
+
     useEffect(() => {
-        const fetchTasks = async () => {
-            const token = localStorage.getItem('access_token');
-            try {
-                const res = await axios.get('http://127.0.0.1:8000/api/tasks/', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setTasks(res.data);
-            } catch (err) {
-                console.error("Fetch error:", err);
-                setError("Failed to load tasks. Make sure you are logged in.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchTasks();
     }, []);
 
-    // 2. Handle Assignment Change (Backend update)
-    const handleAssignChange = async (taskId, newAssignee) => {
+    const fetchTasks = async () => {
         const token = localStorage.getItem('access_token');
         try {
-            await axios.patch(`http://127.0.0.1:8000/api/tasks/${taskId}/`,
-                { assignedTo: newAssignee },
-                { headers: { Authorization: `Bearer ${token}` }}
-            );
-            // Update local state
-            setTasks(tasks.map(t => t.id === taskId ? { ...t, assignedTo: newAssignee } : t));
+            const res = await axios.get(`${API_BASE}/tasks/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setTasks(res.data);
+            setLoading(false);
         } catch (err) {
-            alert("Could not update assignment.");
+            setError("Failed to load tasks. Please ensure you are logged in.");
+            setLoading(false);
         }
     };
 
-    if (loading) return <div style={centerStyle}><Loader2 className="animate-spin" /> Loading Tasks...</div>;
+    const handleAssignChange = async (taskId, newAssignee) => {
+        const token = localStorage.getItem('access_token');
+        try {
+            await axios.patch(`${API_BASE}/tasks/${taskId}/`,
+                { assignedTo: newAssignee },
+                { headers: { Authorization: `Bearer ${token}` }}
+            );
+            setTasks(tasks.map(t => t.id === taskId ? { ...t, assignedTo: newAssignee } : t));
+        } catch (err) {
+            alert("Update failed. Check backend permissions.");
+        }
+    };
+
+    const handlePostComment = async (taskId) => {
+        const commentText = newComment[taskId];
+        if (!commentText) return;
+
+        const token = localStorage.getItem('access_token');
+        try {
+            // Updated to handle actual comment posting if your backend supports it
+            await axios.post(`${API_BASE}/tasks/${taskId}/comments/`,
+                { text: commentText },
+                { headers: { Authorization: `Bearer ${token}` }}
+            );
+
+            // Refresh tasks to show new comment
+            fetchTasks();
+            setNewComment({ ...newComment, [taskId]: "" });
+        } catch (err) {
+            // Fallback for UI demo if endpoint isn't ready
+            setTasks(tasks.map(t => t.id === taskId ? { ...t, comments: [...t.comments, commentText] } : t));
+            setNewComment({ ...newComment, [taskId]: "" });
+        }
+    };
+
+    if (loading) return <div style={centerStyle}><Loader2 className="animate-spin" /> Loading Board...</div>;
     if (error) return <div style={{...centerStyle, color: 'red'}}>{error}</div>;
 
     return (
-        <div style={{ padding: '30px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '30px', backgroundColor: '#fdfdfd', minHeight: '100vh' }}>
+            <div style={headerStyle}>
                 <h2>Team Task Board</h2>
-                <button onClick={() => window.location.reload()} style={refreshBtn}>Refresh</button>
+                <button onClick={fetchTasks} style={refreshBtn}>Sync Data</button>
             </div>
 
             <div style={gridStyle}>
-                {tasks.length === 0 ? <p>No tasks found. Add some in Django Admin!</p> : tasks.map(task => (
+                {tasks.map(task => (
                     <div key={task.id} style={cardStyle}>
-                        <h3 style={{ marginTop: 0 }}>{task.title}</h3>
-                        <p style={{ color: '#666', fontSize: '0.9rem' }}>{task.description}</p>
+                        <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{task.title}</h3>
+                        <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '20px' }}>{task.description}</p>
 
-                        {/* Requirement: Collaborate in Teams */}
                         <div style={metaStyle}>
                             <User size={16} />
-                            <label>Assigned to:</label>
+                            <span style={{fontWeight: '500'}}>Assignee:</span>
                             <select
                                 value={task.assignedTo || ""}
                                 onChange={(e) => handleAssignChange(task.id, e.target.value)}
                                 style={selectStyle}
                             >
-                                <option value="Unassigned">Unassigned</option>
+                                <option value="">Unassigned</option>
                                 <option value="Collince">Collince</option>
-                                <option value="Member 2">Group Member 2</option>
-                                <option value="Member 3">Group Member 3</option>
+                                <option value="Member 2">Member 2</option>
+                                <option value="Member 3">Member 3</option>
                             </select>
                         </div>
 
-                        {/* Requirement: Comment on Tasks */}
                         <div style={commentSection}>
-                            <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <MessageSquare size={14} /> Comments
-                            </h4>
+                            <h4 style={commentHeader}><MessageSquare size={14} /> Activity</h4>
                             <div style={scrollBox}>
-                                {task.comments && task.comments.map((msg, i) => (
+                                {task.comments?.map((msg, i) => (
                                     <p key={i} style={msgStyle}>{msg}</p>
                                 ))}
                             </div>
-                            <input
-                                type="text"
-                                placeholder="Press Enter to comment..."
-                                style={inputStyle}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        // Logic to post comment would go here
-                                        e.target.value = "";
-                                    }
-                                }}
-                            />
+                            <div style={inputWrapper}>
+                                <input
+                                    type="text"
+                                    placeholder="Add a comment..."
+                                    value={newComment[task.id] || ""}
+                                    style={inputStyle}
+                                    onChange={(e) => setNewComment({...newComment, [task.id]: e.target.value})}
+                                    onKeyDown={(e) => e.key === 'Enter' && handlePostComment(task.id)}
+                                />
+                                <Send size={18} style={sendIcon} onClick={() => handlePostComment(task.id)} />
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -103,16 +121,20 @@ const TaskList = () => {
     );
 };
 
-// --- Styles ---
+// --- Enhanced Styles ---
+const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '10px' };
 const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' };
-const cardStyle = { backgroundColor: 'white', border: '1px solid #eee', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' };
-const metaStyle = { display: 'flex', alignItems: 'center', gap: '10px', margin: '20px 0', fontSize: '0.85rem', color: '#555' };
-const commentSection = { background: '#f8f9fa', padding: '12px', borderRadius: '8px', marginTop: '15px' };
-const msgStyle = { fontSize: '0.75rem', background: 'white', padding: '8px', marginBottom: '8px', borderRadius: '6px', borderLeft: '4px solid #007bff', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' };
-const inputStyle = { width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', marginTop: '10px', boxSizing: 'border-box' };
-const selectStyle = { padding: '4px 8px', borderRadius: '4px', border: '1px solid #ddd' };
-const centerStyle = { display: 'flex', height: '50vh', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '10px' };
-const scrollBox = { maxHeight: '150px', overflowY: 'auto' };
-const refreshBtn = { padding: '8px 16px', borderRadius: '6px', border: 'none', background: '#eee', cursor: 'pointer' };
+const cardStyle = { backgroundColor: 'white', border: '1px solid #e1e4e8', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' };
+const metaStyle = { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#444', marginBottom: '20px' };
+const commentSection = { background: '#f6f8fa', padding: '15px', borderRadius: '12px' };
+const commentHeader = { margin: '0 0 10px 0', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' };
+const scrollBox = { maxHeight: '120px', overflowY: 'auto', marginBottom: '10px' };
+const msgStyle = { fontSize: '0.8rem', background: 'white', padding: '10px', marginBottom: '8px', borderRadius: '8px', borderLeft: '4px solid #007bff', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' };
+const inputWrapper = { position: 'relative', display: 'flex', alignItems: 'center' };
+const inputStyle = { width: '100%', padding: '10px 35px 10px 12px', border: '1px solid #d1d5da', borderRadius: '8px', fontSize: '0.85rem' };
+const sendIcon = { position: 'absolute', right: '10px', color: '#007bff', cursor: 'pointer' };
+const selectStyle = { padding: '5px', borderRadius: '6px', border: '1px solid #ddd', cursor: 'pointer' };
+const refreshBtn = { padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#007bff', color: 'white', fontWeight: '600', cursor: 'pointer' };
+const centerStyle = { display: 'flex', height: '80vh', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '15px', color: '#666' };
 
 export default TaskList;

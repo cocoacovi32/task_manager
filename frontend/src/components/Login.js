@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const Login = ({ setAuth }) => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({ username: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Change this to your Railway URL when you deploy!
+    const API_BASE_URL = "http://127.0.0.1:8000";
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -13,22 +19,20 @@ const Login = ({ setAuth }) => {
         setError('');
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/token/', {
-                username: username,
-                password: password
+            const response = await axios.post(`${API_BASE_URL}/api/token/`, {
+                username: formData.username,
+                password: formData.password
             });
 
-            // Save both tokens to LocalStorage
+            // Store both tokens for JWT functionality
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
 
-            // Update app-wide authentication state
+            // Update state to redirect to the TaskBoard
             setAuth(true);
-
-            console.log("Login successful!");
         } catch (err) {
-            console.error(err);
-            setError("Invalid username or password. Please try again.");
+            console.error("Login error details:", err.response?.data);
+            setError(err.response?.data?.detail || "Login Failed! Please check your credentials.");
         } finally {
             setLoading(false);
         }
@@ -36,79 +40,114 @@ const Login = ({ setAuth }) => {
 
     return (
         <div style={styles.container}>
-            <form onSubmit={handleSubmit} style={styles.form}>
-                <h2>Login to Task Manager</h2>
+            <div style={styles.card}>
+                <h2 style={styles.title}>Task Manager</h2>
+                <p style={styles.subtitle}>Sign in to collaborate with your team</p>
 
-                {error && <p style={styles.error}>{error}</p>}
+                {error && <div style={styles.errorBox}>{error}</div>}
 
-                <div style={styles.inputGroup}>
-                    <label>Username</label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        style={styles.input}
-                    />
-                </div>
+                <form onSubmit={handleSubmit}>
+                    <div style={styles.inputGroup}>
+                        <label style={styles.label}>Username</label>
+                        <input
+                            name="username"
+                            type="text"
+                            value={formData.username}
+                            onChange={handleChange}
+                            required
+                            style={styles.input}
+                            placeholder="Enter username"
+                        />
+                    </div>
 
-                <div style={styles.inputGroup}>
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        style={styles.input}
-                    />
-                </div>
+                    <div style={styles.inputGroup}>
+                        <label style={styles.label}>Password</label>
+                        <input
+                            name="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            style={styles.input}
+                            placeholder="••••••••"
+                        />
+                    </div>
 
-                <button type="submit" disabled={loading} style={styles.button}>
-                    {loading ? "Logging in..." : "Login"}
-                </button>
-            </form>
+                    <button type="submit" disabled={loading} style={styles.button}>
+                        {loading ? "Authenticating..." : "Login"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };
 
-// Simple inline styles for a clean look
 const styles = {
     container: {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        backgroundColor: '#f4f4f4'
+        backgroundColor: '#f0f2f5', // Soft gray background
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     },
-    form: {
-        padding: '2rem',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        width: '300px'
+    card: {
+        padding: '40px',
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+        width: '350px'
+    },
+    title: {
+        margin: '0 0 10px 0',
+        textAlign: 'center',
+        color: '#1a1a1a'
+    },
+    subtitle: {
+        margin: '0 0 25px 0',
+        textAlign: 'center',
+        color: '#666',
+        fontSize: '14px'
     },
     inputGroup: {
-        marginBottom: '1rem'
+        marginBottom: '20px'
+    },
+    label: {
+        display: 'block',
+        marginBottom: '8px',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: '#333'
     },
     input: {
         width: '100%',
-        padding: '8px',
-        marginTop: '5px',
-        borderRadius: '4px',
-        border: '1px solid #ccc'
+        padding: '12px',
+        borderRadius: '6px',
+        border: '1px solid #ddd',
+        boxSizing: 'border-box',
+        fontSize: '16px'
     },
     button: {
         width: '100%',
-        padding: '10px',
+        padding: '12px',
         backgroundColor: '#007bff',
         color: '#fff',
         border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer'
+        borderRadius: '6px',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        transition: 'background 0.3s'
     },
-    error: {
-        color: 'red',
-        fontSize: '14px'
+    errorBox: {
+        backgroundColor: '#fff1f0',
+        border: '1px solid #ffa39e',
+        color: '#cf1322',
+        padding: '10px',
+        borderRadius: '4px',
+        marginBottom: '20px',
+        fontSize: '13px',
+        textAlign: 'center'
     }
 };
 
