@@ -1,5 +1,10 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import TaskViewSet
 
-# Leave this empty for now so your migrations can run
+router = DefaultRouter()
+router.register(r'tasks', TaskViewSet)
+
 urlpatterns = [
+    path('', include(router.urls)),
 ]
