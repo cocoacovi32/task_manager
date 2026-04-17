@@ -8,8 +8,8 @@ const TaskList = () => {
     const [error, setError] = useState(null);
     const [newComment, setNewComment] = useState({});
 
-    // Use environment variable or fallback to local for development
-    const API_BASE = "http://127.0.0.1:8000/api";
+    // Use environment variable, fallback to localhost for development
+    const API_BASE = (process.env.REACT_APP_API_URL || "http://127.0.0.1:8000") + "/api";
 
     useEffect(() => {
         fetchTasks();

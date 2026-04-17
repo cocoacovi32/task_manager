@@ -6,8 +6,8 @@ const Login = ({ setAuth }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Change this to your Railway URL when you deploy!
-    const API_BASE_URL = "http://127.0.0.1:8000";
+    // Use environment variable, fallback to localhost for development
+    const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
