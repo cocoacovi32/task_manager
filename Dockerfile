@@ -15,13 +15,14 @@ WORKDIR /app/task_manager\ backend/collab_task_manager/backend
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Create startup script with proper path handling
+# Create startup script with proper path handling and PORT support
 RUN mkdir -p /app/scripts && cat > /app/scripts/start.sh << 'EOF'
 #!/bin/sh
 set -e
 cd /app/task_manager\ backend/collab_task_manager/backend
 python manage.py migrate --noinput
-exec gunicorn task_manager.wsgi --bind 0.0.0.0:8000 --workers 4 --timeout 120
+PORT=${PORT:-8000}
+exec gunicorn task_manager.wsgi --bind 0.0.0.0:$PORT --workers 4 --timeout 120
 EOF
 RUN chmod +x /app/scripts/start.sh
 
