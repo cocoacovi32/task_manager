@@ -21,6 +21,15 @@ RUN mkdir -p /app/scripts && cat > /app/scripts/start.sh << 'EOF'
 set -e
 cd /app/task_manager\ backend/collab_task_manager/backend
 python manage.py migrate --noinput
+
+# Create test user if it doesn't exist
+python manage.py shell << PYEOF
+from django.contrib.auth.models import User
+if not User.objects.filter(username='testuser').exists():
+    User.objects.create_user(username='testuser', password='testpass123')
+    print("Test user created!")
+PYEOF
+
 PORT=${PORT:-8000}
 exec gunicorn task_manager.wsgi --bind 0.0.0.0:$PORT --workers 4 --timeout 120
 EOF
