@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { MessageSquare, User, Loader2, Send } from 'lucide-react';
 
@@ -8,14 +8,9 @@ const TaskList = () => {
     const [error, setError] = useState(null);
     const [newComment, setNewComment] = useState({});
 
-    // Use environment variable, fallback to localhost for development
     const API_BASE = (process.env.REACT_APP_API_URL || "http://127.0.0.1:8000") + "/api";
 
-    useEffect(() => {
-        fetchTasks();
-    }, []);
-
-    const fetchTasks = async () => {
+    const fetchTasks = useCallback(async () => {
         const token = localStorage.getItem('access_token');
         try {
             const res = await axios.get(`${API_BASE}/tasks/`, {
@@ -27,7 +22,11 @@ const TaskList = () => {
             setError("Failed to load tasks. Please ensure you are logged in.");
             setLoading(false);
         }
-    };
+    }, [API_BASE]);
+
+    useEffect(() => {
+        fetchTasks();
+    }, [fetchTasks]);
 
     const handleAssignChange = async (taskId, newAssignee) => {
         const token = localStorage.getItem('access_token');
@@ -48,17 +47,13 @@ const TaskList = () => {
 
         const token = localStorage.getItem('access_token');
         try {
-            // Updated to handle actual comment posting if your backend supports it
             await axios.post(`${API_BASE}/tasks/${taskId}/comments/`,
                 { text: commentText },
                 { headers: { Authorization: `Bearer ${token}` }}
             );
-
-            // Refresh tasks to show new comment
             fetchTasks();
             setNewComment({ ...newComment, [taskId]: "" });
         } catch (err) {
-            // Fallback for UI demo if endpoint isn't ready
             setTasks(tasks.map(t => t.id === taskId ? { ...t, comments: [...t.comments, commentText] } : t));
             setNewComment({ ...newComment, [taskId]: "" });
         }
@@ -121,7 +116,6 @@ const TaskList = () => {
     );
 };
 
-// --- Enhanced Styles ---
 const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '2px solid #eee', paddingBottom: '10px' };
 const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '25px' };
 const cardStyle = { backgroundColor: 'white', border: '1px solid #e1e4e8', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' };
