@@ -1,4 +1,3 @@
-# This tells Railway to build the Backend
 FROM python:3.10-slim
 
 WORKDIR /app
@@ -10,19 +9,22 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire project
 COPY . .
 
-# Set PYTHONPATH and change to backend directory for gunicorn
+# Navigate to the actual Django project directory
 WORKDIR /app/task_manager\ backend/collab_task_manager/backend
 
 # Collect static files
-RUN python manage.py collectstatic --noinput || true
+RUN python manage.py collectstatic --noinput
 
-# Run migrations on startup
-RUN mkdir -p /app/scripts
-RUN echo '#!/bin/sh\npython manage.py migrate --noinput\ngunicorn task_manager.wsgi --bind 0.0.0.0:8000' > /app/scripts/start.sh
+# Create startup script with proper path handling
+RUN mkdir -p /app/scripts && cat > /app/scripts/start.sh << 'EOF'
+#!/bin/sh
+set -e
+cd /app/task_manager\ backend/collab_task_manager/backend
+python manage.py migrate --noinput
+exec gunicorn task_manager.wsgi --bind 0.0.0.0:8000 --workers 4 --timeout 120
+EOF
 RUN chmod +x /app/scripts/start.sh
 
-# Expose port
 EXPOSE 8000
 
-# Start the server
-CMD ["/app/scripts/start.sh"]
+CMD ["/bin/sh", "/app/scripts/start.sh"]
