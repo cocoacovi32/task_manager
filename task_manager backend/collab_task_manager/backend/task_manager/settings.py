@@ -111,7 +111,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Allow React to talk to Django
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000,http://127.0.0.1:3000'
+    'http://localhost:3000,http://127.0.0.1:3000,https://fontend21.netlify.app'
 ).split(',')]
 
 CORS_ALLOW_CREDENTIALS = True

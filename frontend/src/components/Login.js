@@ -6,8 +6,8 @@ const Login = ({ setAuth }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // Use environment variable, fallback to localhost for development
-    const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    // API URL already includes /api from REACT_APP_API_URL
+    const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000/api";
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,7 +19,7 @@ const Login = ({ setAuth }) => {
         setError('');
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/token/`, {
+            const response = await axios.post(`${API_BASE_URL}/token/`, {
                 username: formData.username,
                 password: formData.password
             });
