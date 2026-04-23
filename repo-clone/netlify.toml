@@ -1,0 +1,12 @@
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "build"
+
+[env.production]
+  REACT_APP_API_URL = "https://taskmanager-production-617c.up.railway.app/api"
