@@ -109,13 +109,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- YOUR CUSTOM API SETTINGS ---
 
 # Allow React to talk to Django
-CORS_ALLOWED_ORIGINS = os.getenv(
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:3000,http://127.0.0.1:3000,https://fontend21.netlify.app'
-).split(',')
+).split(',')]
 
-# Strip whitespace from origins
-CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS]
+CORS_ALLOW_CREDENTIALS = True
 
 # Set up JWT Authentication
 REST_FRAMEWORK = {

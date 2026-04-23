@@ -15,13 +15,31 @@ WORKDIR /app/task_manager\ backend/collab_task_manager/backend
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
+<<<<<<< HEAD
 # Create startup script with proper path handling
+=======
+# Create startup script with proper path handling and PORT support
+>>>>>>> e852caf238ff9b257bfb82dcf9311292bc7e14e8
 RUN mkdir -p /app/scripts && cat > /app/scripts/start.sh << 'EOF'
 #!/bin/sh
 set -e
 cd /app/task_manager\ backend/collab_task_manager/backend
 python manage.py migrate --noinput
+<<<<<<< HEAD
 exec gunicorn task_manager.wsgi --bind 0.0.0.0:8000 --workers 4 --timeout 120
+=======
+
+# Create test user if it doesn't exist
+python manage.py shell << PYEOF
+from django.contrib.auth.models import User
+if not User.objects.filter(username='testuser').exists():
+    User.objects.create_user(username='testuser', password='testpass123')
+    print("Test user created!")
+PYEOF
+
+PORT=${PORT:-8000}
+exec gunicorn task_manager.wsgi --bind 0.0.0.0:$PORT --workers 4 --timeout 120
+>>>>>>> e852caf238ff9b257bfb82dcf9311292bc7e14e8
 EOF
 RUN chmod +x /app/scripts/start.sh
 
