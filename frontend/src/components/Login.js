@@ -6,8 +6,8 @@ const Login = ({ setAuth }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // API URL already includes /api from REACT_APP_API_URL
-    const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000/api";
+    // Updated to your live Railway backend URL
+    const API_BASE_URL = "https://taskmanager-production-617c.up.railway.app/api";
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,19 +19,21 @@ const Login = ({ setAuth }) => {
         setError('');
 
         try {
+            // URL results in https://taskmanager-production-617c.up.railway.app/api/token/
             const response = await axios.post(`${API_BASE_URL}/token/`, {
                 username: formData.username,
                 password: formData.password
             });
 
-            // Store both tokens for JWT functionality
+            // Store tokens for JWT functionality
             localStorage.setItem('access_token', response.data.access);
             localStorage.setItem('refresh_token', response.data.refresh);
 
-            // Update state to redirect to the TaskBoard
+            // Update auth state to trigger redirect
             setAuth(true);
         } catch (err) {
             console.error("Login error details:", err.response?.data);
+            // Fallback error message if backend doesn't return a specific detail
             setError(err.response?.data?.detail || "Login Failed! Please check your credentials.");
         } finally {
             setLoading(false);
@@ -88,7 +90,7 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        backgroundColor: '#f0f2f5', // Soft gray background
+        backgroundColor: '#f0f2f5',
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     },
     card: {
