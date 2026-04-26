@@ -1,41 +1,29 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 
 const Login = ({ setAuth }) => {
-    const [formData, setFormData] = useState({ username: '', password: '' });
+    const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
-    // Updated to your live Railway backend URL
-    const API_BASE_URL = "https://taskmanager-production-617c.up.railway.app/api";
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
+        if (!username.trim()) {
+            setError('Please enter a username');
+            setLoading(false);
+            return;
+        }
+
         try {
-            // URL results in https://taskmanager-production-617c.up.railway.app/api/token/
-            const response = await axios.post(`${API_BASE_URL}/token/`, {
-                username: formData.username,
-                password: formData.password
-            });
-
-            // Store tokens for JWT functionality
-            localStorage.setItem('access_token', response.data.access);
-            localStorage.setItem('refresh_token', response.data.refresh);
-
-            // Update auth state to trigger redirect
+            // Simple username-based login (no password)
+            localStorage.setItem('access_token', 'demo-token-' + username);
+            localStorage.setItem('user', username);
             setAuth(true);
         } catch (err) {
-            console.error("Login error details:", err.response?.data);
-            // Fallback error message if backend doesn't return a specific detail
-            setError(err.response?.data?.detail || "Login Failed! Please check your credentials.");
-        } finally {
+            console.error("Login error:", err);
+            setError("Login failed. Please try again.");
             setLoading(false);
         }
     };
@@ -44,7 +32,7 @@ const Login = ({ setAuth }) => {
         <div style={styles.container}>
             <div style={styles.card}>
                 <h2 style={styles.title}>Task Manager</h2>
-                <p style={styles.subtitle}>Sign in to collaborate with your team</p>
+                <p style={styles.subtitle}>Enter your username to continue</p>
 
                 {error && <div style={styles.errorBox}>{error}</div>}
 
@@ -52,33 +40,24 @@ const Login = ({ setAuth }) => {
                     <div style={styles.inputGroup}>
                         <label style={styles.label}>Username</label>
                         <input
-                            name="username"
                             type="text"
-                            value={formData.username}
-                            onChange={handleChange}
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                             style={styles.input}
-                            placeholder="Enter username"
-                        />
-                    </div>
-
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Password</label>
-                        <input
-                            name="password"
-                            type="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            style={styles.input}
-                            placeholder="••••••••"
+                            placeholder="Enter your username"
+                            autoComplete="username"
                         />
                     </div>
 
                     <button type="submit" disabled={loading} style={styles.button}>
-                        {loading ? "Authenticating..." : "Login"}
+                        {loading ? "Logging in..." : "Login"}
                     </button>
                 </form>
+
+                <div style={styles.infoBox}>
+                    <p style={styles.infoText}>💡 Tip: Use any username to login</p>
+                </div>
             </div>
         </div>
     );
@@ -103,7 +82,8 @@ const styles = {
     title: {
         margin: '0 0 10px 0',
         textAlign: 'center',
-        color: '#1a1a1a'
+        color: '#1a1a1a',
+        fontSize: '28px'
     },
     subtitle: {
         margin: '0 0 25px 0',
@@ -127,7 +107,8 @@ const styles = {
         borderRadius: '6px',
         border: '1px solid #ddd',
         boxSizing: 'border-box',
-        fontSize: '16px'
+        fontSize: '16px',
+        transition: 'border-color 0.3s'
     },
     button: {
         width: '100%',
@@ -150,6 +131,19 @@ const styles = {
         marginBottom: '20px',
         fontSize: '13px',
         textAlign: 'center'
+    },
+    infoBox: {
+        backgroundColor: '#e6f7ff',
+        border: '1px solid #91d5ff',
+        padding: '12px',
+        borderRadius: '6px',
+        marginTop: '20px'
+    },
+    infoText: {
+        margin: '0',
+        color: '#0050b3',
+        textAlign: 'center',
+        fontSize: '13px'
     }
 };
 
