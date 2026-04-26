@@ -10,13 +10,15 @@ env:
   REGISTRY: docker.io
   BACKEND_IMAGE: task-manager-backend
   FRONTEND_IMAGE: task-manager-frontend
-
+#Defines a list of automated jobs to run
 jobs:
+#The unique ID for this specific job
   backend-test:
     runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:15-alpine
+        #Enviroment variables required to initialize the Postgres instance
         env:
           POSTGRES_DB: test_db
           POSTGRES_USER: postgres
