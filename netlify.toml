@@ -7,6 +7,7 @@
   base = "frontend"
   command = "npm run build"
   publish = "build"
+  environment = { REACT_APP_API_URL = "http://localhost:8000/api" }
 
-[env.production]
-  REACT_APP_API_URL = "https://taskmanager-production-617c.up.railway.app/api"
+[context.production]
+  environment = { REACT_APP_API_URL = "https://taskmanager-production-617c.up.railway.app/api" }
