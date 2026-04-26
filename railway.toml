@@ -1,0 +1,4 @@
+[build]
+
+[deploy]
+startCommand = "cd 'task_manager backend/collab_task_manager/backend' && python manage.py migrate --noinput && gunicorn task_manager.wsgi --bind 0.0.0.0:${PORT:-8000} --workers 4 --timeout 120"
