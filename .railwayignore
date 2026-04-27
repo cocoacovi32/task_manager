@@ -1,0 +1,6 @@
+# Railway: Deploy only frontend
+task_manager backend/
+requirements.txt
+Procfile
+runtime.txt
+.github/
