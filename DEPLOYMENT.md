@@ -2,67 +2,55 @@
 
 ## Frontend Deployment (React App)
 
-1. **Go to Netlify**: https://app.netlify.com
+**✅ LIVE NOW**: https://frontend212.netlify.app/
 
-2. **Connect GitHub**:
-   - Click "New site from Git"
-   - Select GitHub
-   - Authorize Netlify to access your repositories
-   - Select `cocoacovi32/task_manager`
+### How to Login:
+1. Go to https://frontend212.netlify.app/
+2. Enter any username (e.g., `admin`, `user1`, `test`)
+3. Click Login
+4. Add, edit, and manage tasks locally
+5. All data saves in your browser
 
-3. **Configure Build Settings**:
-   - **Base directory**: `frontend`
-   - **Build command**: `npm run build`
-   - **Publish directory**: `build`
+---
 
-4. **Environment Variables**:
-   - Click "Site settings" → "Build & deploy" → "Environment"
-   - Add:
-     ```
-     REACT_APP_API_URL = https://your-backend-url/api
-     ```
-   - (Replace with your actual backend URL)
+## Credentials
 
-5. **Deploy**:
-   - Click "Deploy site"
-   - Wait for build to complete
-   - Your site will be live at `https://[random-name].netlify.app`
+**Frontend (Netlify)**:
+- URL: https://frontend212.netlify.app/
+- Login: Username only (no password)
+- Try: `admin` or any username
 
-## Backend Deployment (Django)
+**Backend API (if deployed)**:
+- URL: https://taskmanager-production-617c.up.railway.app/
+- Admin Panel: https://taskmanager-production-617c.up.railway.app/admin
+- Username: `admin`
+- Password: `Password123`
 
-Since you were using Railway, you can continue there or use Heroku:
+---
 
-### Option A: Railway (Recommended)
-1. Go to https://railway.app
-2. Connect your GitHub repo
-3. Railway will auto-detect Django
-4. Set environment variables:
-   - `DEBUG=False`
-   - `SECRET_KEY=[generate-one]`
-   - `ALLOWED_HOSTS=your-domain.railway.app`
-   - `CORS_ALLOWED_ORIGINS=https://your-netlify-site.netlify.app`
+## How to Deploy Updates
 
-### Option B: Heroku
-1. Go to https://heroku.com
-2. Create new app
-3. Connect GitHub
-4. Set buildpacks: `heroku/python`
-5. Set config vars (same as Railway above)
-6. Deploy
+1. Make changes to `/frontend` folder
+2. Commit: `git add . && git commit -m "Your message"`
+3. Push: `git push`
+4. Netlify auto-deploys (watch https://app.netlify.com)
+5. Site updates in 2-3 minutes
 
-## Verify Deployment
+---
 
-After both are deployed:
+## Features
 
-1. Visit your Netlify frontend URL
-2. Login with any username
-3. Verify tasks work locally
-4. Check browser console (F12) for any errors
+✅ Username-only login (no password needed)
+✅ Add, edit, delete tasks
+✅ Assign tasks to team members
+✅ Add comments to tasks
+✅ All data saves locally (no backend required)
+✅ Fully responsive design
 
-## Credentials for Testing
+---
 
-- **Username**: `admin` (any username works for login)
-- **Password**: Not required (local auth)
-- **Backend Admin**: `https://your-backend-url/admin`
-  - Username: `admin`
-  - Password: `Password123`
+## Support
+
+- **Build Issues**: Check Netlify Deploy logs at https://app.netlify.com
+- **Login Problems**: Clear browser cache (Ctrl+Shift+Delete)
+- **Tasks Not Saving**: Check browser console (F12)
